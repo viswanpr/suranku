@@ -7,12 +7,15 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath('se.transmode.gradle:gradle-docker:1.2')
+
 	}
 }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'docker'
 
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
@@ -25,6 +28,55 @@ configurations.all {
 	exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
 
+task openJPAEnhance {
+	description 'Enhance JPA model classes using OpenJPA Enhancer'
+	dependsOn classes
+
+	doLast {
+		// define the entity classes
+		def entityFiles = fileTree(sourceSets.main.output.classesDir).matching {
+			include 'com/suranku/users/dao/entity/*.class'
+		}
+
+		println "Enhancing with OpenJPA, the following files..."
+		entityFiles.getFiles().each {
+			println it
+		}
+
+		// define Ant task for Enhancer
+		ant.taskdef(
+				name : 'openjpac',
+				classpath : sourceSets.main.runtimeClasspath.asPath,
+				classname : 'org.apache.openjpa.ant.PCEnhancerTask'
+		)
+
+		// Run the OpenJPA Enhancer as an Ant task
+		//   - see OpenJPA 'PCEnhancerTask' for supported arguments
+		//   - this invocation of the enhancer adds support for a default-ctor
+		//   - as well as ensuring JPA property use is valid.
+		ant.openjpac(
+				classpath: sourceSets.main.runtimeClasspath.asPath,
+				addDefaultConstructor: true,
+				enforcePropertyRestrictions: true) {
+			entityFiles.addToAntBuilder(ant, 'fileset', FileCollection.AntType.FileSet)
+		}
+	}
+}
+
+task buildDocker(type: Docker, dependsOn: assemble) {
+	push = false
+	tagVersion = 'latest'
+	applicationName = jar.baseName
+
+	dockerfile = file('src/main/docker/Dockerfile')
+	doFirst {
+		copy {
+			from jar
+			into stageDir
+		}
+	}
+}
+
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
@@ -34,7 +86,14 @@ dependencies {
 	compileOnly('org.projectlombok:lombok')
 	compile('org.springframework.data:spring-data-jpa')
 	compile('org.apache.openjpa:openjpa-persistence-jdbc:2.4.1')
+	compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.5')
+	compile('com.fasterxml.jackson.core:jackson-databind:2.8.5')
+
+
 	runtime('org.postgresql:postgresql:9.4-1200-jdbc4')
 
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+test.dependsOn openJPAEnhance
+
+findMainClass.dependsOn openJPAEnhance

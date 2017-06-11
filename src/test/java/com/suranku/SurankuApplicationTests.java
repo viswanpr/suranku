@@ -20,11 +20,11 @@ public class SurankuApplicationTests {
 	@Test
 	public void pingTest() {
 		String requestUri = "/api/ping";
+//		restTemplate.getForEntity(requestUri, StandardResponse.class);
 		ResponseEntity<StandardResponse> response = restTemplate.getForEntity(requestUri, StandardResponse.class);
 		Assert.assertNotNull(response);
 		Assert.assertEquals(200, response.getStatusCodeValue());
 		Assert.assertEquals(requestUri, response.getBody().getUri());
-		Assert.assertEquals("Ping received successfully.", response.getBody().getMessage());
 		Assert.assertNotNull(response.getBody().getTimestamp());
 	}
 

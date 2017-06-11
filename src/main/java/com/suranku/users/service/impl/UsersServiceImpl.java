@@ -67,7 +67,7 @@ public class UsersServiceImpl implements UsersService{
     }
 
     /**
-     * Retrieves list of all countries.
+     * Retrieves list of all users.
      *
      * @param asyncResponse - Asynchronous response object to hold service response
      */
@@ -83,17 +83,22 @@ public class UsersServiceImpl implements UsersService{
         final String requestUri = HttpServletRequestUtil.getFullRequestUri(request);
         final String requestMethod = request.getMethod();
 
-        AsyncThreadUtil.createThread(asyncResponse, () -> {
-            List<Users> users = usersRepository.findAllByOrderByDisplayOrder();
+        try {
+            AsyncThreadUtil.createThread(asyncResponse, () -> {
+                List<Users> users = usersRepository.findAll();
 
-            StandardResponse responseEntity = new UsersListResponse.Builder()
-                    .code(Response.Status.OK.getStatusCode())
-                    .message(countriesRetrieved)
-                    .uri(requestUri).method(requestMethod)
-                    .payload(users)
-                    .build();
-            asyncResponse.resume(Response.status(Response.Status.OK).entity(responseEntity).build());
-        }).start();
+                StandardResponse responseEntity = new UsersListResponse.Builder()
+                        .code(Response.Status.OK.getStatusCode())
+                        .message(countriesRetrieved)
+                        .uri(requestUri).method(requestMethod)
+                        .payload(users)
+                        .build();
+                asyncResponse.resume(Response.status(Response.Status.OK).entity(responseEntity).build());
+            }).start();
+        } catch (Exception ex) {
+            System.out.print("Exception" + ex);
+        }
+
     }
 
     private static class UsersListResponse extends StandardResponse<List<Users>> {

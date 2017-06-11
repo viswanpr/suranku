@@ -45,7 +45,7 @@ public class Users {
     @Setter
     private String organization;
 
-    @Column(name = "home_phone_num")
+    @Column(name = "home_phon_num")
     @Getter
     @Setter
     private Integer homePhoneNum;
