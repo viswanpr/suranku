@@ -21,6 +21,10 @@ repositories {
 	mavenCentral()
 }
 
+configurations.all {
+	exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
+
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
@@ -28,5 +32,9 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jersey')
 	compile('io.swagger:swagger-jersey2-jaxrs:1.5.10')
 	compileOnly('org.projectlombok:lombok')
+	compile('org.springframework.data:spring-data-jpa')
+	compile('org.apache.openjpa:openjpa-persistence-jdbc:2.4.1')
+	runtime('org.postgresql:postgresql:9.4-1200-jdbc4')
+
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }

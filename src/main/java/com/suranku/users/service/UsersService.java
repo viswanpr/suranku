@@ -10,4 +10,11 @@ public interface UsersService {
      * @param asyncResponse - Asynchronous response object to hold service response
      */
     void ping(AsyncResponse asyncResponse);
+
+    /**
+     * Retrieves list of all users.
+     *
+     * @param asyncResponse - Asynchronous response object to hold service response
+     */
+    void getUsers(AsyncResponse asyncResponse);
 }
